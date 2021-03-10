@@ -111,7 +111,7 @@ class Spring extends PhysicsObject{
   void update(float dt){
     PVector diff = obj2.pos.copy().sub(obj1.pos);
     float dist = diff.mag();
-    if(dist < l){ return; }
+    //if(dist < l){ return; }
 
     PVector dir = diff.normalize();
     PVector force = dir.mult((dist-l)*d);
@@ -140,7 +140,7 @@ class Rope extends PhysicsObject{
     for(int i = 0; i < n; i++){
       pos.add(new PVector(0, diff));
       objs.add(new Ball(pos.copy(), 50, diff/2));
-      springs.add(new Spring(objs.get(i), objs.get(i+1), 5000, 0));
+      springs.add(new Spring(objs.get(i), objs.get(i+1), 5000, 20));
     }
   }
 
@@ -172,6 +172,80 @@ class Rope extends PhysicsObject{
     tracker.display();
   }
 }
+
+class EinsteinianSolid extends PhysicsObject{
+  ArrayList<PhysicsObject> objs = new ArrayList<PhysicsObject>();
+  ArrayList<Spring> springs = new ArrayList<Spring>();
+
+  EinsteinianSolid(float x, float y, int n, float diff){
+    super(new PVector(0, 0), new PVector(0, 0), n*50);
+
+    for(int dy = -n; dy <= n; dy++){
+      for(int dx = -n; dx <= n; dx++){
+        objs.add(new Ball(new PVector(x+dx*diff, y+dy*diff), 50, 25));
+      }
+    }
+
+    int side = 2*n+1;
+    objs.set(n*side + n, new MouseBall(25));
+
+    float sqrt2 = sqrt(2);
+    for(int bx = 0; bx < side-1; bx++){
+      for(int by = 0; by < side-1; by++){
+        PhysicsObject obj = objs.get(by * side + bx);
+        PhysicsObject objR = objs.get(by * side + (bx+1));
+        PhysicsObject objB = objs.get((by+1) * side + bx);
+        PhysicsObject objBR = objs.get((by+1) * side + (bx+1));
+
+        springs.add(new Spring(obj, objR, 5000, diff));
+        springs.add(new Spring(obj, objB, 5000, diff));
+        springs.add(new Spring(obj, objBR, 5000, diff*sqrt2));
+        springs.add(new Spring(objR, objB, 5000, diff*sqrt2));
+      }
+    }
+
+    for(int bx = 0; bx < side-1; bx++){
+      PhysicsObject obj = objs.get((side-1) * side + bx);
+      PhysicsObject objR = objs.get((side-1) * side + (bx+1));
+      springs.add(new Spring(obj, objR, 5000, diff));
+    }
+
+    for(int by = 0; by < side-1; by++){
+      PhysicsObject obj = objs.get(by * side + (side-1));
+      PhysicsObject objB = objs.get((by+1) * side + (side-1));
+      springs.add(new Spring(obj, objB, 5000, diff));
+    }
+
+
+  }
+
+  void applyForce(PVector force){
+    force.div(objs.size());
+    for(PhysicsObject obj : objs){
+      obj.applyForce(force);
+    }
+  }
+
+  void update(float dt){
+    for(PhysicsObject obj : objs){
+      obj.update(dt);
+    }
+    for(Spring spring : springs){
+      spring.update(dt);
+    }
+  }
+
+  void display(){
+    for(PhysicsObject obj : objs){
+      obj.display();
+    }
+    for(Spring spring : springs){
+      spring.display();
+    }
+  }
+}
+
+
 
 class PhysicsManager{
   ArrayList<PhysicsObject> objects = new ArrayList<PhysicsObject>();
@@ -211,19 +285,15 @@ void setup() {
   size(800, 800);
   frameRate(6000);
 
-  PhysicsObject b1 = manager.add(new Ball(new PVector(400, 300), new PVector(0, 0), 0, 25.0));
-  PhysicsObject b2 = manager.add(new Ball(new PVector(300, 400), new PVector(100, 0), 20.0, 25.0));
-  PhysicsObject b3 = manager.add(new Ball(new PVector(400, 500), new PVector(500, 0), 10.0, 25.0));
-  PhysicsObject b4 = manager.add(new MouseBall(20));
+  //PhysicsObject b = manager.add(new MouseBall(20));
+  //manager.add(new Rope(b, 10, 30));
 
-  manager.add(new Spring(b1, b2, 300.0));
-  manager.add(new Spring(b2, b3, 500.0));
-  manager.add(new Rope(b4, 10, 30));
+  manager.add(new EinsteinianSolid(400, 400, 2, 100));
 }
 
 void draw(){
 
-  manager.applyGravity(new PVector(0, 500));
+  manager.applyGravity(new PVector(0, 1000));
   manager.update();
 
   background(0);
