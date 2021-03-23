@@ -203,6 +203,7 @@ class EinsteinianSolid extends PhysicsObject{
     }
 
     int side = 2*n+1;
+    float d = 3000;
     objs.set(n*side + n, new MouseBall(25));
 
     float sqrt2 = sqrt(2);
@@ -213,23 +214,23 @@ class EinsteinianSolid extends PhysicsObject{
         PhysicsObject objB = objs.get((by+1) * side + bx);
         PhysicsObject objBR = objs.get((by+1) * side + (bx+1));
 
-        springs.add(new Spring(obj, objR, 5000, diff));
-        springs.add(new Spring(obj, objB, 5000, diff));
-        springs.add(new Spring(obj, objBR, 5000, diff*sqrt2));
-        springs.add(new Spring(objR, objB, 5000, diff*sqrt2));
+        springs.add(new Spring(obj, objR, d, diff));
+        springs.add(new Spring(obj, objB, d, diff));
+        springs.add(new Spring(obj, objBR, d, diff*sqrt2));
+        springs.add(new Spring(objR, objB, d, diff*sqrt2));
       }
     }
 
     for(int bx = 0; bx < side-1; bx++){
       PhysicsObject obj = objs.get((side-1) * side + bx);
       PhysicsObject objR = objs.get((side-1) * side + (bx+1));
-      springs.add(new Spring(obj, objR, 5000, diff));
+      springs.add(new Spring(obj, objR, d, diff));
     }
 
     for(int by = 0; by < side-1; by++){
       PhysicsObject obj = objs.get(by * side + (side-1));
       PhysicsObject objB = objs.get((by+1) * side + (side-1));
-      springs.add(new Spring(obj, objB, 5000, diff));
+      springs.add(new Spring(obj, objB, d, diff));
     }
 
 
